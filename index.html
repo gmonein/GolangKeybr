@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>A static page</title>
+  </head>
+<body>
+  <div id='typingDiv' class='hidden'>
+    <table>
+      <tbody id="usersTable">
+      </tbody>
+    </table>
+    <div id='citation' class='citation'>
+    </div>
+    <span>type here</span>
+    <input type="textarea" id="letterInput" maxlength="1">
+    <br></br>
+    <br></br>
+  </div>
+
+  <div id='loginDiv'>
+    <span>current user</span>
+    <input type="textarea" id="userInput" maxlength="8" autofocus>
+    <button type="button" id="userLoginButton">Login</button>
+  </div>
+</body>
+<style>
+  .citation {
+    width: 80%;
+    text-align: center;
+    background: #f0e68c;
+  }
+  .letter {
+    min-width: 5px;
+    min-height: 14px;
+    padding-right: 2px;
+    display: inline-block;
+  }
+  .space:after{
+    content: '-';
+    opacity: 0%;
+  }
+  .success {
+    color: green;
+  }
+  .fail {
+    color: red;
+  }
+  .index {
+    background-color: lightgrey;
+  }
+  .hidden {
+    display: none;
+  }
+</style>
+<script>
+   let userInput = document.getElementById('userInput')
+   let userLoginButton = document.getElementById('userLoginButton')
+   let letterInput = document.getElementById('letterInput')
+   let usersTable = document.getElementById('usersTable')
+
+   let openGetSocket = function() {
+     window.getSocket = new WebSocket("ws://localhost:8081/data_ws")
+     window.getSocket.onopen = () => { window.getSocket.send(JSON.stringify({ name: window.currentUser })) }
+     window.getSocket.onclose = () => { 
+       document.getElementById('loginDiv').classList.remove('hidden')
+       document.getElementById('typingDiv').classList.add('hidden')
+     }
+     window.getSocket.onmessage = function (event) {
+       if (event.data == "new game") {
+         getCitation()
+         return ;
+       }
+       if (event.data == "finish") {
+         return ;
+       }
+       if (event.data == "top") {
+         console.log('top')
+         return ;
+       }
+       users = JSON.parse(event.data)
+       usersTable.innerHTML = ''
+       if (users[window.currentUser]) {
+         letterInput.index = users[window.currentUser].CurrentIndex
+       }
+       Object.keys(users).forEach( key => {
+         let prct = 100 * users[key].CurrentIndex / letterInput.maxIndex
+         usersTable.innerHTML = usersTable.innerHTML + `<tr>
+           <td style="width:1%; border: 1px solid grey">${key}</td>
+           <td style="border: 1px solid grey"><div style='padding-left: ${prct}%; height: 20px; width: 3px; background-color: grey'> </div></td>
+           <td style="width:1%">${users[key].CurrentIndex}</td>
+           <td style="width:1%">${users[key].CurrentError}</td>
+           </tr>\n`
+       })
+     }
+   }
+   let openTypeSocket = function() {
+     window.typeSocket = new WebSocket("ws://localhost:8081/type_ws")
+     window.typeSocket.onopen = () => { window.typeSocket.send(JSON.stringify({ name: window.currentUser })) }
+     window.typeSocket.onclose = () => { 
+       document.getElementById('loginDiv').classList.remove('hidden')
+       document.getElementById('typingDiv').classList.add('hidden')
+     }
+   }
+
+   userInput.onkeydown = e => {
+      if (e.which == 13) {
+          userLoginButton.click()
+      }
+   }
+   userLoginButton.onclick = e => {
+     window.currentUser = userInput.value
+
+     document.getElementById('loginDiv').classList.add('hidden')
+     document.getElementById('typingDiv').classList.remove('hidden')
+     letterInput.focus()
+     openTypeSocket()
+     openGetSocket()
+     getCitation()
+   }
+
+   let getCitation = () => {
+     fetch("/citation")
+        .then(response => response.text())
+        .then((response) => {
+          let div = document.getElementById('citation')
+          let explode = [...response]
+          let index = -1
+          div.innerHTML = explode.map( letter => {
+            if (letter == "\n") {
+              index += 1
+              return `<div index=${index} class='letter space'> </div><br>`
+            } else if (letter == " ") {
+              index += 1
+              return `<div index=${index} class='letter space'> </div>`
+            } else {
+              index += 1
+              return `<div index=${index} class='letter'>${letter}</div>`
+            }
+          }).join('')
+          letterInput.index = 0
+          letterInput.maxIndex = explode.length
+          letterInput.value = ''
+          document.querySelector(`div.letter[index='0']`).classList.add('index')
+        })
+        .catch(err => console.log(err))
+    }
+
+letterInput.oninput = e => {
+  let div = document.querySelector(`div.letter[index='${letterInput.index}']`)
+
+  if (div.innerHTML == e.target.value) {
+    div.classList.add('success')
+    div.classList.remove('index')
+    let elem = document.querySelector(`div.letter[index='${letterInput.index + 1}']`)
+    if (elem) {
+      letterInput.index += 1
+      elem.classList.add('index') 
+    }
+    window.typeSocket.send(JSON.stringify({
+      name: window.currentUser,
+      input: e.target.value
+    }))
+  }
+  else {
+    div.classList.add('fail')
+  }
+  e.target.value = ''
+  e.preventDefault()
+}
+
+</script>
+</html>

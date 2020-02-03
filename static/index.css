@@ -1,0 +1,21 @@
+.TextInput-fragment {
+    max-width: 50rem;
+    margin: 0 auto;
+    padding: 0;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    font-family: Ubuntu Mono,Lucida Console,monospace;
+    font-size: 1.6rem;
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: normal;
+    word-spacing: normal;
+    color: #27253e;
+}
+
+.TextInput-item {
+    margin: 0;
+    padding: 0;
+}
