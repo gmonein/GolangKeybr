@@ -30,7 +30,7 @@ func main() {
 	// http.HandleFunc("/", handler)
 	currentCitation = findCitation()
 	finish = false
-	http.HandleFunc("/index", templateHandler)
+	http.HandleFunc("/", templateHandler)
 	http.HandleFunc("/citation", citationHandler)
 	http.HandleFunc("/data_ws", dataWsHandler)
 	http.HandleFunc("/type_ws", typeWsHandler)

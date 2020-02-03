@@ -60,7 +60,7 @@
    let usersTable = document.getElementById('usersTable')
 
    let openGetSocket = function() {
-     window.getSocket = new WebSocket("ws://localhost:8081/data_ws")
+     window.getSocket = new WebSocket("ws://gadi.42.fr/data_ws")
      window.getSocket.onopen = () => { window.getSocket.send(JSON.stringify({ name: window.currentUser })) }
      window.getSocket.onclose = () => { 
        document.getElementById('loginDiv').classList.remove('hidden')
@@ -95,7 +95,7 @@
      }
    }
    let openTypeSocket = function() {
-     window.typeSocket = new WebSocket("ws://localhost:8081/type_ws")
+     window.typeSocket = new WebSocket("ws://gadi.42.fr/type_ws")
      window.typeSocket.onopen = () => { window.typeSocket.send(JSON.stringify({ name: window.currentUser })) }
      window.typeSocket.onclose = () => { 
        document.getElementById('loginDiv').classList.remove('hidden')
