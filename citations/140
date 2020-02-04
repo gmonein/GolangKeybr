@@ -1,7 +1,3 @@
-Getting back to failing early, I've learned it's important to completely
-fail. Get fired. Shoot the project, then burn its corpse. Melt the CVS
-repository and microwave the backup CDs. When things go wrong, I've
-often tried to play the hero from start to finish. Guess what? Some
-projects are doomed no matter what. Some need skills I don't possess.
-And some need a fresh face.
--- Reginald Braithwaite
+Good programmers use their brains, but good guidelines save us having to
+think out every case.
+-- Francis Glassborow

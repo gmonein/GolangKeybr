@@ -1,3 +1,4 @@
-Java and C++ make you think that the new ideas are like the old ones.
-Java is the most distressing thing to hit computing since MS-DOS.
--- Alan Kay
+In general, we can think of data as defined by some collection of
+selectors and constructors, together with specified conditions that
+these procedures must fulfill in order to be a valid representation.
+-- SICP, What is meant by data?

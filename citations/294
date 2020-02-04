@@ -1,4 +1,5 @@
-Side projects are less masturbatory than reading RSS, often more
-useful than MobileMe, more educational than the comments on Reddit,
-and usually more fun than listening to keynotes.
--- Chris Wanstrath
+Abstraction is a form of data compression: absolutely necessary, because
+human short-term memory is so small, but the critically important aspect
+of abstraction is the algorithm that gets you from the name back to the
+"uncompressed" details.
+-- Bruce Wilder (blog post comment)

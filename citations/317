@@ -1,4 +1,7 @@
-Hire people smarter than you.  Work with people smarter than you.
-Listen to them. Let them lead you. Take the blame for all failures,
-give away the credit for all successes.
--- How to fail: 25 secrets learned through failure
+I think that a lot of programmers are ignoring an important point when
+people talk about reducing code repetition on large projects.
+Part of the idea is that large projects are intrinsically *wrong*. That
+you should be looking at making a number of smaller projects that are
+composable, even if you never end up reusing one of those smaller
+projects elsewhere.
+-- Dan Nugent

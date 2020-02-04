@@ -1,3 +1,4 @@
-The use of COBOL cripples the mind; its teaching should therefore be
-regarded as a criminal offense.
--- E.W. Dijkstra
+For complex systems, the compiler and development environment need to be
+in the same language that its supporting. It's the only way to grow
+code.
+-- Alan Kay

@@ -1,4 +1,3 @@
-A tail call allows a function to return the result of another function
-without leaving an entry on the stack. Tail recursion is a specific case
-of tail calling.
--- ASPN : Python Cookbook : Explicit Tail Call
+Some may say Ruby is a bad rip-off of Lisp or Smalltalk, and I admit
+that. But it is nicer to ordinary people.
+-- Matz, LL2

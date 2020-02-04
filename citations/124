@@ -1,10 +1,3 @@
-Let me try to get this straight: Lisp is a language for describing
-algorithms. This was JohnMcCarthy's original purpose, anyway: to build
-something more convenient than a Turing machine. Lisp is not about file,
-socket or GUI programming - Lisp is about expressive power. (For
-example, you can design multiple object systems for Lisp, in Lisp. Or
-implement the now-fashionable AOP. Or do arbitrary transformations on
-parsed source code.) If you don't value expressive power, Lisp ain't for
-you. I, personally, would prefer Lisp to not become mainstream: this
-would necessarily involve a dumbing down.
--- VladimirSlepnev
+If Java had true garbage collection, most programs would delete
+themselves upon execution.
+-- Robert Sewell

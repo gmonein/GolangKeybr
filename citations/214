@@ -1,2 +1,3 @@
-If everything seems under control, you're not going fast enough.
--- Mario Andretti
+An interpreter raises the machine to the level of the user program; a
+compiler lowers the user program to the level of the machine language.
+-- SICP

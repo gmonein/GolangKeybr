@@ -1,21 +1,3 @@
-Something Confusing about "Hard":
-It's tempting to think that if it's hard, then it's valuable.
-Most valuable things are hard.
-Most hard things are completely useless -- (picture of someone smashing
-their head through concrete blocks kung-fu style).
-Hard DOES NOT EQUATE TO BEING valuable.
-Remember Friendster back in the day?
-You'd sign in, invite friends, have 25 friends, go to their profile, and
-then it'd show how you were connected to each one.
-That's an impressive [some geeky CS jargon] Cone traversal of a tree -
-100 million string comparisons per page -- it won't scale.
-Used to take a minute per page to load, and Friendster died a painful
-death.
-MySpace -- not interested in solving problems
-They use the shortcut of "Miss Fitzpatrick is in your extended network"
-(i.e. even when you're not even signed up for MySpace)
-They didn't solve the hard problem. But they make the more relevant
-assumption that you want to be connected to hot women. [LOL]
-Shows Alexa graph showing that in early 2005 Myspace took off, and
-quickly bypassed Friendster and never looked back.
--- Max Levchin, PayPal founder, Talk at StartupSchool2007
+The use of COBOL cripples the mind; its teaching should therefore be
+regarded as a criminal offense.
+-- E.W. Dijkstra

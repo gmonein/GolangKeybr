@@ -1,6 +1,4 @@
-It's a problem if the design doesn't let you add features at a later
-date. If you have to redo a program, the hours you spend can cause you
-to lose your competitive edge. A flexible program demonstrates the
-difference between a good designer and someone who is just getting a
-piece of code out.
--- Gary Kildall (inventor of CP/M, one of the first OS for the micro).
+Any sufficiently complicated C or Fortran program contains an ad hoc,
+informally specified, bug-ridden, slow implementation of half of Common
+Lisp.
+-- Philip Greenspun (Greenspun's Tenth Rule)

@@ -1,3 +1,3 @@
-We should forget about small efficiencies, say about 97% of the time:
-premature optimization is the root of all evil.
--- Donald Knuth
+Measure everything you can about the product, and you'll start seeing
+patterns.
+-- Max Levchin, PayPal founder, Talk at StartupSchool2007

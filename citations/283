@@ -1,6 +1,5 @@
-In OO, it's the data that is the "important" thing: you define the class
-which contains member data, and only incidentally contains code for
-manipulating the object. In FP, it's the code that's important: you
-define a function which contains code for working with the data, and
-only incidentally define what the data is.
--- almkgor, on reddit
+A person won't become proficient at something until he or she has done
+it many times. In other words., if you want someone to be really good at
+building a software system, he or she will have to have built 10 or more
+systems of that type.
+-- Philip Greenspun

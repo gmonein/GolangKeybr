@@ -10,12 +10,14 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 )
 
 type User struct {
 	Name           string
-	CurrentIndex   int
+	Place          int
+	Index          int `json:"index"`
 	CurrentError   int
 	LastErrorIndex int
 	CurrentSpeed   float32
@@ -23,12 +25,14 @@ type User struct {
 }
 
 var users map[string]*User
-var currentCitation []byte
+var umux sync.Mutex
+var citation []byte
+var userFinished bool
 var finish bool
 
 func main() {
 	// http.HandleFunc("/", handler)
-	currentCitation = findCitation()
+	citation = findCitation()
 	finish = false
 	http.HandleFunc("/", templateHandler)
 	http.HandleFunc("/citation", citationHandler)
@@ -39,7 +43,7 @@ func main() {
 	}
 	err := http.ListenAndServe(":8081", nil)
 	if err != nil {
-		fmt.Println("omg")
+		fmt.Println("omg", err)
 	}
 }
 
@@ -53,88 +57,143 @@ func usersJson() []byte {
 	return jsonString
 }
 
-func getUser(name string) *User {
-	if users[name] == nil {
-		users[name] = &User{
-			Name:         name,
-			CurrentIndex: 0}
+func deleteUser(name string) {
+	umux.Lock()
+	delete(users, name)
+	umux.Unlock()
+}
+
+func sendToEveryUser(message []byte) {
+	for _, user := range users {
+		user.send(message)
 	}
-	return users[name]
+}
+
+func typeSubscribe(conn *websocket.Conn) *User {
+	_, content, err := conn.ReadMessage()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	var message struct {
+		Name string `json:"name"`
+	}
+	err = json.Unmarshal(content, &message)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	if users[message.Name] != nil {
+		return nil
+	}
+	if len(message.Name) > 8 {
+		fmt.Println("Nice try", message.Name)
+		return nil
+	}
+	users[message.Name] = &User{Name: message.Name}
+	return users[message.Name]
+}
+
+func getInput(conn *websocket.Conn) (byte, error) {
+	var message struct {
+		Input string `json:"input"`
+	}
+	_, content, err := conn.ReadMessage()
+	if err != nil {
+		log.Println(err)
+		return '0', err
+	}
+	err = json.Unmarshal(content, &message)
+	if err != nil {
+		fmt.Println(err)
+		return '0', err
+	}
+	return message.Input[0], nil
+}
+
+func (user *User) input(input byte) bool {
+	char := citation[user.Index]
+
+	if input != '0' && (char == input || (char == '\n' && input == ' ')) {
+		user.Index++
+		if len(citation) == user.Index {
+			fmt.Println(user.Name, "finished")
+			user.finish()
+		}
+		return true
+	} else {
+		if user.LastErrorIndex != user.Index {
+			user.LastErrorIndex = user.Index
+			user.CurrentError++
+			return true
+		}
+	}
+	return false
 }
 
 func typeReader(conn *websocket.Conn) {
-	var message struct {
-		Name  string `json:"name"`
-		Input string `json:"input"`
+	user := typeSubscribe(conn)
+	if user == nil {
+		conn.Close()
+		return
 	}
-	var currentUserName string = ""
-	var currentUser *User
+	sendUsers()
 	for {
-		_, content, err := conn.ReadMessage()
+		input, err := getInput(conn)
 		if err != nil {
-			delete(users, currentUserName)
-			log.Println(err)
+			conn.Close()
 			return
 		}
-		err = json.Unmarshal(content, &message)
-		if err != nil {
-			delete(users, currentUserName)
-			fmt.Println(err)
-			return
-		}
-
-		currentUser = getUser(message.Name)
+		user.input(input)
 		sendUsers()
-
-		if !finish {
-			currentChar := currentCitation[currentUser.CurrentIndex]
-			fmt.Println(currentCitation[currentUser.CurrentIndex])
-			if message.Input != "" && (currentChar == message.Input[0] || (currentChar == '\n' && message.Input[0] == ' ')) {
-				currentUser.CurrentIndex++
-			} else {
-				if currentUser.LastErrorIndex != currentUser.CurrentIndex {
-					currentUser.LastErrorIndex = currentUser.CurrentIndex
-					currentUser.CurrentError++
-				}
-			}
-		}
-		sendUsers()
-		if currentUser.CurrentIndex == len(currentCitation) && !finish {
-			go func() {
-				time.Sleep(1 * time.Second)
-				finish = true
-				time.Sleep(1 * time.Second)
-				currentCitation = findCitation()
-				for _, user := range users {
-					user.CurrentIndex = 0
-					user.CurrentError = 0
-					user.LastErrorIndex = 0
-					_ = user.getConn.WriteMessage(1, []byte("new game"))
-				}
-				sendUsers()
-				finish = false
-				for _, user := range users {
-					_ = user.getConn.WriteMessage(1, []byte("top"))
-				}
-			}()
-		}
 	}
 }
 
-func sendUser(to *User) {
-	if to.getConn != nil {
-		err := to.getConn.WriteMessage(1, usersJson())
-		if err != nil {
-			delete(users, to.Name)
-			return
-		}
+func newGame() {
+	time.Sleep(3 * time.Second)
+	finish = true
+	time.Sleep(3 * time.Second)
+	citation = findCitation()
+	for _, user := range users {
+		user.reset()
+		user.send([]byte("new game"))
+	}
+	sendUsers()
+	sendToEveryUser([]byte("Wait"))
+	time.Sleep(3 * time.Second)
+	finish = false
+	sendToEveryUser([]byte("Go"))
+}
+
+func (user *User) finish() {
+	if !userFinished {
+		user.Place = 1
+		go newGame()
+	}
+}
+
+func (user *User) reset() {
+	user.Index = 0
+	user.CurrentError = 0
+	user.LastErrorIndex = 0
+	user.Place = -1
+}
+
+func (user *User) send(message []byte) {
+	if user.getConn == nil {
+		return
+	}
+	err := user.getConn.WriteMessage(1, message)
+	if err != nil {
+		fmt.Println(err)
+		deleteUser(user.Name)
 	}
 }
 
 func sendUsers() {
-	for _, user := range users {
-		sendUser(user)
-	}
+	m := usersJson()
+	sendToEveryUser(m)
 }
 
 func dataWs(conn *websocket.Conn) {
@@ -143,23 +202,35 @@ func dataWs(conn *websocket.Conn) {
 	}
 	_, content, err := conn.ReadMessage()
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
+	fmt.Println("data ws receiving connection")
 	err = json.Unmarshal(content, &message)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
-	currentUser := getUser(message.Name)
-	if currentUser.getConn != nil {
-		currentUser.getConn.Close()
+	user := users[message.Name]
+	if user == nil {
+		fmt.Println(message.Name, ": data ws user doesn't exist")
+		conn.Close()
+		return
 	}
-	currentUser.getConn = conn
+	if user.getConn != nil {
+		conn.Close()
+		return
+	}
+	user.getConn = conn
 	sendUsers()
+	fmt.Println(user.Name, ": conn succeed sending users")
 	for {
-		_, _, err = currentUser.getConn.ReadMessage()
+		_, _, err = user.getConn.ReadMessage()
 		if err != nil {
-			currentUser.getConn.Close()
-			delete(users, currentUser.Name)
+			fmt.Println(user.Name, ": crashed")
+			fmt.Println(err)
+			user.getConn.Close()
+			deleteUser(user.Name)
 			return
 		}
 	}
@@ -185,7 +256,7 @@ func typeWsHandler(w http.ResponseWriter, r *http.Request) {
 
 func citationHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/text")
-	_, err := w.Write(currentCitation)
+	_, err := w.Write(citation)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -194,7 +265,7 @@ func citationHandler(w http.ResponseWriter, r *http.Request) {
 
 func findCitation() []byte {
 	rand.Seed(time.Now().UnixNano() / int64(time.Millisecond))
-	citation_nb := rand.Int() % 338
+	citation_nb := rand.Int() % 100
 	dat, err := ioutil.ReadFile("./citations/" + strconv.Itoa(citation_nb))
 	if err != nil {
 		fmt.Println(err)
@@ -203,7 +274,6 @@ func findCitation() []byte {
 	return dat
 }
 
-//templateHandler renders a template and returns as http response.
 func templateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	t, err := template.ParseFiles("index.html")

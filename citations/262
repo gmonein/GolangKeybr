@@ -1,5 +1,4 @@
-A person won't become proficient at something until he or she has done
-it many times. In other words., if you want someone to be really good at
-building a software system, he or she will have to have built 10 or more
-systems of that type.
--- Philip Greenspun
+A tail call allows a function to return the result of another function
+without leaving an entry on the stack. Tail recursion is a specific case
+of tail calling.
+-- ASPN : Python Cookbook : Explicit Tail Call

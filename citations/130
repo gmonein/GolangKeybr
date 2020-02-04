@@ -1,7 +1,3 @@
-I think that a lot of programmers are ignoring an important point when
-people talk about reducing code repetition on large projects.
-Part of the idea is that large projects are intrinsically *wrong*. That
-you should be looking at making a number of smaller projects that are
-composable, even if you never end up reusing one of those smaller
-projects elsewhere.
--- Dan Nugent
+The problem is that small examples fail to convince, and large examples
+are too big to follow.
+-- Steve Yegge.

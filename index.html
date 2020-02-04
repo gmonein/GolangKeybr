@@ -6,16 +6,15 @@
   </head>
 <body>
   <div id='typingDiv' class='hidden'>
+    <div id='citation' class='citation'>
+    </div>
+    <input class='typearea' type="textarea" id="letterInput" maxlength="1">
+    <br></br>
+    <br></br>
     <table>
       <tbody id="usersTable">
       </tbody>
     </table>
-    <div id='citation' class='citation'>
-    </div>
-    <span>type here</span>
-    <input type="textarea" id="letterInput" maxlength="1">
-    <br></br>
-    <br></br>
   </div>
 
   <div id='loginDiv'>
@@ -25,8 +24,13 @@
   </div>
 </body>
 <style>
+  .typearea {
+    width: 100%;
+    height: 1px;
+    background: #f0e68c;
+  }
   .citation {
-    width: 80%;
+    width: 100%;
     text-align: center;
     background: #f0e68c;
   }
@@ -58,9 +62,10 @@
    let userLoginButton = document.getElementById('userLoginButton')
    let letterInput = document.getElementById('letterInput')
    let usersTable = document.getElementById('usersTable')
+   let windowLocation = window.location.host
 
    let openGetSocket = function() {
-     window.getSocket = new WebSocket("ws://gadi.42.fr/data_ws")
+     window.getSocket = new WebSocket("ws://" + `${windowLocation}/data_ws`)
      window.getSocket.onopen = () => { window.getSocket.send(JSON.stringify({ name: window.currentUser })) }
      window.getSocket.onclose = () => { 
        document.getElementById('loginDiv').classList.remove('hidden')
@@ -81,21 +86,21 @@
        users = JSON.parse(event.data)
        usersTable.innerHTML = ''
        if (users[window.currentUser]) {
-         letterInput.index = users[window.currentUser].CurrentIndex
+         letterInput.index = users[window.currentUser].index
        }
        Object.keys(users).forEach( key => {
-         let prct = 100 * users[key].CurrentIndex / letterInput.maxIndex
+         let prct = 100 * users[key].index / letterInput.maxIndex
          usersTable.innerHTML = usersTable.innerHTML + `<tr>
            <td style="width:1%; border: 1px solid grey">${key}</td>
            <td style="border: 1px solid grey"><div style='padding-left: ${prct}%; height: 20px; width: 3px; background-color: grey'> </div></td>
-           <td style="width:1%">${users[key].CurrentIndex}</td>
+           <td style="width:1%">${users[key].index}</td>
            <td style="width:1%">${users[key].CurrentError}</td>
            </tr>\n`
        })
      }
    }
    let openTypeSocket = function() {
-     window.typeSocket = new WebSocket("ws://gadi.42.fr/type_ws")
+     window.typeSocket = new WebSocket("ws://" + `${windowLocation}/type_ws`)
      window.typeSocket.onopen = () => { window.typeSocket.send(JSON.stringify({ name: window.currentUser })) }
      window.typeSocket.onclose = () => { 
        document.getElementById('loginDiv').classList.remove('hidden')
