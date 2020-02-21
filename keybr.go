@@ -22,6 +22,7 @@ type User struct {
 	LastErrorIndex int
 	CurrentSpeed   float32
 	getConn        *websocket.Conn
+	getConnMutex   sync.Mutex
 }
 
 var users map[string]*User
@@ -34,14 +35,18 @@ func main() {
 	// http.HandleFunc("/", handler)
 	citation = findCitation()
 	finish = false
-	http.HandleFunc("/", templateHandler)
+	// http.HandleFunc("/", templateHandler)
 	http.HandleFunc("/citation", citationHandler)
 	http.HandleFunc("/data_ws", dataWsHandler)
 	http.HandleFunc("/type_ws", typeWsHandler)
+	http.HandleFunc("/oauth", OauthHandler)
+
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	if users == nil {
 		users = make(map[string]*User, 10)
 	}
-	err := http.ListenAndServe(":8081", nil)
+	err := http.ListenAndServe(":8082", nil)
 	if err != nil {
 		fmt.Println("omg", err)
 	}
@@ -104,11 +109,13 @@ func getInput(conn *websocket.Conn) (byte, error) {
 		log.Println(err)
 		return '0', err
 	}
+	fmt.Println("here")
 	err = json.Unmarshal(content, &message)
 	if err != nil {
 		fmt.Println(err)
 		return '0', err
 	}
+	fmt.Println("heree")
 	return message.Input[0], nil
 }
 
@@ -140,13 +147,17 @@ func typeReader(conn *websocket.Conn) {
 	}
 	sendUsers()
 	for {
+		fmt.Println("wait")
 		input, err := getInput(conn)
 		if err != nil {
+			fmt.Println(err)
 			conn.Close()
 			return
 		}
 		user.input(input)
+		fmt.Println("wait 1")
 		sendUsers()
+		fmt.Println("wait 2")
 	}
 }
 
@@ -184,7 +195,9 @@ func (user *User) send(message []byte) {
 	if user.getConn == nil {
 		return
 	}
+	user.getConnMutex.Lock()
 	err := user.getConn.WriteMessage(1, message)
+	user.getConnMutex.Unlock()
 	if err != nil {
 		fmt.Println(err)
 		deleteUser(user.Name)
