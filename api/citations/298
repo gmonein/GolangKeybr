@@ -1,0 +1,5 @@
+A guideline in the process of stepwise refinement should be the
+principle to decompose decisions as much as possible, to untangle
+aspects which are only seemingly interdependent, and to defer those
+decisions which concern details of representation as long as possible.
+-- Niklaus Wirth

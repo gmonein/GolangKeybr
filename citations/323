@@ -1,9 +1,0 @@
-You have to write for your audience. I would never write (1..5).map
-&'*2' in Java when I could write
-ListFactoryFactory.getListFactoryFromResource(
-    new ResourceName('com.javax.magnitudes.integers').
-setLowerBound(1).setUpperBound(5).setStep(1).applyFunctor(
-    new Functor () { public void eval (x) { return x * 2; } }))
-I'm simplifying, of course, I've left out the security and logging
-wrappers.
--- Reginald Braithwait
