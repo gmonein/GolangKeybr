@@ -9,13 +9,18 @@ import (
 	"net/http"
 )
 
+type handlerWraper func(func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
+type handler func(http.ResponseWriter, *http.Request)
+
 // Routes defined all keybr routes
 func Routes() {
-	f := frontRequestHandler
-	a := authWrapper
-	http.HandleFunc("/citation", a(f(citationHandler)))
-	http.HandleFunc("/data_ws", f(dataWsHandler))
-	http.HandleFunc("/type_ws", f(typeWsHandler))
+	fa := func(h handler) handler {
+		return frontRequestWrapper(
+			authWrapper(h))
+	}
+	http.HandleFunc("/citation", fa(citationHandler))
+	http.HandleFunc("/data_ws", fa(dataWsHandler))
+	http.HandleFunc("/type_ws", fa(typeWsHandler))
 	http.HandleFunc("/oauth", oauthHandler)
 	http.HandleFunc("/ssh", sshHandler)
 }
@@ -52,7 +57,7 @@ func authWrapper(next func(http.ResponseWriter, *http.Request)) func(http.Respon
 	}
 }
 
-func frontRequestHandler(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func frontRequestWrapper(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "localhost:8083")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
