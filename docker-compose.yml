@@ -18,7 +18,7 @@ services:
       context: ./front/
       dockerfile: ./Dockerfile
     ports:
-      - "8083:8080"
+      - "8083:8083"
     volumes:
       - type: volume
         source: ./front/
@@ -26,6 +26,6 @@ services:
     working_dir: /front
     environment:
       - HOST=0.0.0.0
-      - PORT=8080
+      - PORT=8083
     entrypoint:
       "/front/entrypoint.sh"

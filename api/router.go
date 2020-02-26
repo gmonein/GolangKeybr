@@ -5,7 +5,7 @@ import (
 	"keybr/intraapi"
 	"log"
 	"net/http"
-	"net/url"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -44,17 +44,35 @@ func parseJwtToken(tokenString string) (jwt.Claims, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims, nil
-	} else {
-		fmt.Println(err)
-		return nil, err
 	}
+	fmt.Println(err)
+	return nil, err
 }
 
 func authWrapper(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.Header.Get("token"), "tata")
-		parseJwtToken(r.Header.Get("token"))
-		next(w, r)
+		headerToken := r.Header.Get("token")
+		cookieToken, _ := r.Cookie("token")
+
+		var parsedToken jwt.Claims
+		var err error
+
+		if headerToken != "" {
+			parsedToken, err = parseJwtToken(headerToken)
+		} else if cookieToken != nil && cookieToken.Value != "" {
+			parsedToken, err = parseJwtToken(cookieToken.Value)
+		}
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(fmt.Sprint(err)))
+			return
+		}
+		if parsedToken == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+		} else {
+			fmt.Println(parsedToken)
+			next(w, r)
+		}
 	}
 }
 
@@ -116,16 +134,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	lct, err := url.Parse("http://localhost:8083")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
-		return
-	}
-	urlParams := url.Values{}
-	urlParams.Add("token", tokenString)
-	lct.RawQuery = urlParams.Encode()
-
-	fmt.Println(r.Header)
-	http.Redirect(w, r, lct.String(), http.StatusTemporaryRedirect)
+	cookie := &http.Cookie{Name: "token", Value: tokenString, Expires: time.Now().Add(356 * 24 * time.Hour), HttpOnly: true}
+	http.SetCookie(w, cookie)
+	http.Redirect(w, r, "http://localhost:8083/login", http.StatusTemporaryRedirect)
 }
