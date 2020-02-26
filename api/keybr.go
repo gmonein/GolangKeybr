@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -11,6 +10,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type User struct {
@@ -35,15 +36,8 @@ func main() {
 	// http.HandleFunc("/", handler)
 	citation = findCitation()
 	finish = false
-	http.HandleFunc("/", rootHandler)
-	http.HandleFunc("/citation", citationHandler)
-	http.HandleFunc("/data_ws", dataWsHandler)
-	http.HandleFunc("/type_ws", typeWsHandler)
-	http.HandleFunc("/oauth", OauthHandler)
-	http.HandleFunc("/ssh", sshHandler)
 
-	fs := http.FileServer(http.Dir("./static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	Routes()
 	if users == nil {
 		users = make(map[string]*User, 10)
 	}
@@ -52,17 +46,6 @@ func main() {
 	if err != nil {
 		fmt.Println("omg", err)
 	}
-}
-
-func setupResponse(w *http.ResponseWriter, req *http.Request) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "localhost:8083")
-	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-}
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	setupResponse(&w, r)
-	http.Redirect(w, r, "/static/index.html", 301)
 }
 
 var upgrader = websocket.Upgrader{
@@ -259,37 +242,6 @@ func dataWs(conn *websocket.Conn) {
 			deleteUser(user.Name)
 			return
 		}
-	}
-}
-
-func dataWsHandler(w http.ResponseWriter, r *http.Request) {
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-	}
-	dataWs(ws)
-}
-
-func typeWsHandler(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-	}
-	typeReader(ws)
-}
-
-func sshHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDDac87uqRmn8Y+KnvTbmwTdVPhdZkmIwnxJXzksCplgOaQb86m25KBPRvlt8jDMv7OYeuAVgvH8a0I+hyeAmBZWHAuzBxH1UPRR2F4CTsMMBuAqyL8/zw9SlPrG6lacyfSXh6pjtL6kwrAR3ZKDJzT97q4xgWEeM9ZOz7aCmaxqTVhzoD1uuJ0CBNb+q98ZfxhqEg3g6C+5zNldH3ksGYXO/eguajQXRx1zpKBgjfZRTSaJNj1nNUk6Wx4YqYvbs/guEj7vzMr9fof6w2g580yt/dqVWiYqQ5xYpqvCwoONlz41r0ZQ4U8wZ/6v5xf1D6Y55X/nG6yQdfd4K1meGclYjsmLoaWKy+5TeTLc2bAiEHOjVf/vEIfUw/bsu493ZQ6zvCujZdDKM+X/C/gPpd3myxbHp7CpZLVZLrG4U6k3VhqnRULUrJa8FPdithNyRwW6EqUqfeVmy6Xyok32k3lK8AwfH2oBCGGc4GT5L9jPGdd8tS/R2CfY7ipvvTsNzHVDSvowvoXFoDYJaL0FNi/eY+/0H36/k8u24uc11qJ2Diac17TiVxkE0gTgljO5ZSTtzD4pfrZhtJxTxKYlWfcBrDk4W4IYPpx+u7tQHCFe8RHUnY+gJtbqQLsD89lBddR1OaeOCVVDw0uMkjkQfeplcWDikAnHtfCk73yKCHH4w== gmonein@student.42.fr"))
-}
-
-func citationHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/text")
-	_, err := w.Write(citation)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 }
 

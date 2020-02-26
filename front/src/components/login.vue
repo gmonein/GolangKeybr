@@ -1,38 +1,11 @@
 <template>
   <div id="login">
     <h1>Login</h1>
-    <input type="text" name="username" v-model="input.username" placeholder="Username" />
-    <input type="password" name="password" v-model="input.password" placeholder="Password" />
-    <button type="button" v-on:click="login()">Login</button>
+    <a href="https://api.intra.42.fr/oauth/authorize?client_id=08fdc53b395d24655e44ba228b44e2e52b4ed63e683e610a1798bbfa56a39aa6&redirect_uri=http%3A%2F%2Flocalhost%3A8082%2Foauth&response_type=code">Login</a>
   </div>
 </template>
 
 <script>
-export default {
-  name: 'Login',
-  data () {
-    return {
-      input: {
-        username: '',
-        password: ''
-      }
-    }
-  },
-  methods: {
-    login () {
-      if (this.input.username !== '' && this.input.password !== '') {
-        if (this.input.username === this.$parent.mockAccount.username && this.input.password === this.$parent.mockAccount.password) {
-          this.$emit('authenticated', true)
-          this.$router.replace({ name: 'secure' })
-        } else {
-          console.log('The username and / or password is incorrect')
-        }
-      } else {
-        console.log('A username and password must be present')
-      }
-    }
-  }
-}
 </script>
 
 <style scoped>
