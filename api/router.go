@@ -1,12 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"keybr/intraapi"
 	"log"
 	"net/http"
+	"net/url"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type handlerWraper func(func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
@@ -109,13 +110,22 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	tokenString, err := jwtToken.SignedString([]byte("toto"))
 
+	fmt.Println(tokenString)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
-	res, err := json.Marshal(map[string]string{
-		"token": tokenString,
-		"login": user.Login})
-	w.Write(res)
+	lct, err := url.Parse("http://localhost:8083")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+	urlParams := url.Values{}
+	urlParams.Add("token", tokenString)
+	lct.RawQuery = urlParams.Encode()
+
+	fmt.Println(r.Header)
+	http.Redirect(w, r, lct.String(), http.StatusTemporaryRedirect)
 }

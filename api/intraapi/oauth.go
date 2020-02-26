@@ -108,14 +108,9 @@ func (t Token) Get(endpoint string) (body []byte, err error) {
 	return
 }
 
-// GetUserFromCode send /v2/me from oauth authorization_code
-func GetUserFromCode(code string) (user *IntraUser, token *Token, err error) {
-	token, err = Connector.getTokenUser(code)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	me, err := token.Get("v2/me")
+// Me return /v2/me parsed IntraUser of token
+func (t *Token) Me() (user *IntraUser, err error) {
+	me, err := t.Get("v2/me")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -124,5 +119,16 @@ func GetUserFromCode(code string) (user *IntraUser, token *Token, err error) {
 	if err != nil {
 		return
 	}
+	return
+}
+
+// GetUserFromCode send /v2/me from oauth authorization_code
+func GetUserFromCode(code string) (user *IntraUser, token *Token, err error) {
+	token, err = Connector.getTokenUser(code)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	user, err = token.Me()
 	return
 }
