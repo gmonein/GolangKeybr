@@ -1,2 +1,3 @@
 #!/bin/sh
-npm run start
+npm i -D
+npm start

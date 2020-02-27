@@ -3,6 +3,7 @@ package intraapi
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -27,12 +28,6 @@ type Token struct {
 	Toto         string `json:"toto"`
 }
 
-// func oauthHandler(w http.ResponseWriter, r *http.Request) {
-// 	token := r.URL.Query()["code"]
-// 	fmt.Println(token)
-// 	http.Get("https://api.intra.42.fr/v2/users/me")
-// }
-
 // Connector is the interface to query intra api
 var Connector IntraAPI
 
@@ -53,15 +48,25 @@ func readConfig(path string) (*apiConfig, error) {
 }
 
 func init() {
+	Connector = IntraAPI{config: loadConfig()}
+}
+
+func loadConfig() *apiConfig {
 	config, err := readConfig("api.json")
 	if err != nil {
 		fmt.Println("Intra connector failed to read config", err)
-		return
+		return nil
 	}
-	Connector = IntraAPI{config: config}
+	return config
 }
 
 func (api IntraAPI) getTokenUser(code string) (t *Token, err error) {
+	if api.config == nil {
+		api.config = loadConfig()
+		if api.config == nil {
+			return nil, errors.New("API config is null")
+		}
+	}
 	tokenParam := map[string]string{
 		"client_id":     api.config.UID,
 		"client_secret": api.config.Secret,
@@ -83,6 +88,9 @@ func (api IntraAPI) getTokenUser(code string) (t *Token, err error) {
 	body, err := ioutil.ReadAll(resp.Body)
 
 	err = json.Unmarshal(body, &t)
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
 	return
 }
 

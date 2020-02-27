@@ -7,11 +7,11 @@ import SecureComponent from '@/components/secure'
 Vue.use(Router)
 
 let router = new Router({
+  mode: 'history',
   routes: [
-    { path: '/', redirect: { name: 'login' } },
-    { path: '/login', name: 'login', component: LoginComponent, meta: { respondToToken: true } },
-    { path: '/secure', name: 'secure', component: SecureComponent, meta: { requiresAuth: true } }
-  ]
+    { path: '/', name: 'login', component: LoginComponent },
+    { path: '/login', name: 'login', component: LoginComponent },
+    { path: '/secure', name: 'secure', component: SecureComponent, meta: { requiresAuth: true } }]
 })
 
 function userIsAuth () {
@@ -19,17 +19,15 @@ function userIsAuth () {
 }
 
 router.beforeEach((to, from, next) => {
-  console.log(to)
-  console.log(from)
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!userIsAuth()) {
-      next({ name: 'login' })
-    } else {
-      next()
-    }
-  } else {
-    next()
+  if (to.matched.some(record => record.meta.requiresAuth) && userIsAuth()) {
+    next({ name: 'login' })
+    return
   }
+  if (to.name === 'login' && userIsAuth()) {
+    next({ name: 'secure' })
+    return
+  }
+  next()
 })
 
 export default router

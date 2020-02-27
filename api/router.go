@@ -10,8 +10,18 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type handlerWraper func(func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
+type context struct {
+	CurrentToken *jwt.Claims
+}
+
 type handler func(http.ResponseWriter, *http.Request)
+type handlerWithContext func(context, http.ResponseWriter, *http.Request)
+
+func contextWrapper(hwc handlerWithContext) handler {
+	return func(w http.ResponseWriter, r *http.Request) {
+		hwc(context{}, w, r)
+	}
+}
 
 // Routes defined all keybr routes
 func Routes() {
@@ -24,6 +34,10 @@ func Routes() {
 	http.HandleFunc("/type_ws", fa(typeWsHandler))
 	http.HandleFunc("/oauth", oauthHandler)
 	http.HandleFunc("/ssh", sshHandler)
+	http.HandleFunc("/whoami", fa(whoamiHandler))
+}
+
+func whoamiHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseJwtToken(tokenString string) (jwt.Claims, error) {
@@ -49,30 +63,33 @@ func parseJwtToken(tokenString string) (jwt.Claims, error) {
 	return nil, err
 }
 
+func findTokenFromRequest(r *http.Request) *string {
+	headerToken := r.Header.Get("token")
+	if headerToken != "" {
+		return &headerToken
+	}
+	cookieToken, _ := r.Cookie("token")
+	if cookieToken != nil {
+		return &cookieToken.Value
+	}
+	return nil
+}
+
 func authWrapper(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		headerToken := r.Header.Get("token")
-		cookieToken, _ := r.Cookie("token")
+		token := findTokenFromRequest(r)
 
-		var parsedToken jwt.Claims
-		var err error
-
-		if headerToken != "" {
-			parsedToken, err = parseJwtToken(headerToken)
-		} else if cookieToken != nil && cookieToken.Value != "" {
-			parsedToken, err = parseJwtToken(cookieToken.Value)
-		}
-		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte(fmt.Sprint(err)))
-			return
-		}
-		if parsedToken == nil {
-			w.WriteHeader(http.StatusUnauthorized)
-		} else {
+		if token != nil {
+			parsedToken, err := parseJwtToken(*token)
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				fmt.Println(err)
+				return
+			}
 			fmt.Println(parsedToken)
 			next(w, r)
 		}
+		w.WriteHeader(http.StatusUnauthorized)
 	}
 }
 
@@ -128,12 +145,12 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	tokenString, err := jwtToken.SignedString([]byte("toto"))
 
-	fmt.Println(tokenString)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
+		_, _ = w.Write([]byte(fmt.Sprintln(err)))
 		return
 	}
+	fmt.Println(tokenString)
 	cookie := &http.Cookie{Name: "token", Value: tokenString, Expires: time.Now().Add(356 * 24 * time.Hour), HttpOnly: true}
 	http.SetCookie(w, cookie)
 	http.Redirect(w, r, "http://localhost:8083/login", http.StatusTemporaryRedirect)
