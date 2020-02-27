@@ -9,17 +9,17 @@ Vue.use(Router)
 let router = new Router({
   mode: 'history',
   routes: [
-    { path: '/', name: 'login', component: LoginComponent },
+    { path: '/', name: 'home', component: LoginComponent },
     { path: '/login', name: 'login', component: LoginComponent },
     { path: '/secure', name: 'secure', component: SecureComponent, meta: { requiresAuth: true } }]
 })
 
 function userIsAuth () {
-  return false
+  return true
 }
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth) && userIsAuth()) {
+  if (to.matched.some(record => record.meta.requiresAuth) && !userIsAuth()) {
     next({ name: 'login' })
     return
   }

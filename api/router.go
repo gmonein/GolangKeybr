@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"keybr/intraapi"
 	"log"
@@ -15,6 +16,7 @@ type context struct {
 }
 
 type handler func(http.ResponseWriter, *http.Request)
+
 type handlerWithContext func(context, http.ResponseWriter, *http.Request)
 
 func contextWrapper(hwc handlerWithContext) handler {
@@ -38,9 +40,25 @@ func Routes() {
 }
 
 func whoamiHandler(w http.ResponseWriter, r *http.Request) {
+	token := findTokenFromRequest(r)
+	if token == nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	parsedToken, err := parseJwtToken(*token)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	respMap := map[string]string{"login": parsedToken["login"].(string)}
+	respJSON, _ := json.Marshal(respMap)
+	_, _ = w.Write(respJSON)
 }
 
-func parseJwtToken(tokenString string) (jwt.Claims, error) {
+func parseJwtToken(tokenString string) (jwt.MapClaims, error) {
 	if tokenString == "" {
 		return nil, nil
 	}
@@ -79,6 +97,7 @@ func authWrapper(next func(http.ResponseWriter, *http.Request)) func(http.Respon
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := findTokenFromRequest(r)
 
+		fmt.Println(token)
 		if token != nil {
 			parsedToken, err := parseJwtToken(*token)
 			if err != nil {
@@ -95,7 +114,8 @@ func authWrapper(next func(http.ResponseWriter, *http.Request)) func(http.Respon
 
 func frontRequestWrapper(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "localhost:8083")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8083")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		next(w, r)
