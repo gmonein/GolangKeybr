@@ -29,3 +29,6 @@ services:
       - PORT=8083
     entrypoint:
       "/front/entrypoint.sh"
+volumes:
+  api:
+  front:
