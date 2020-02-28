@@ -54,8 +54,20 @@ func whoamiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respMap := map[string]string{"login": parsedToken["login"].(string)}
-	respJSON, _ := json.Marshal(respMap)
-	_, _ = w.Write(respJSON)
+	respJSON, err := json.Marshal(respMap)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	_, err = w.Write(respJSON)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	fmt.Println(respJSON)
 }
 
 func parseJwtToken(tokenString string) (jwt.MapClaims, error) {

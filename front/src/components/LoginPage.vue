@@ -10,7 +10,6 @@ export default {
   name: 'Login'
 }
 
-console.log(window.location)
 </script>
 
 <style scoped>

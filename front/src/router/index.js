@@ -1,32 +1,32 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 // import HelloWorld from '@/components/HelloWorld'
-import LoginComponent from '@/components/login'
-import SecureComponent from '@/components/secure'
+import LoginPage from '@/components/LoginPage'
+import HomePage from '@/components/HomePage'
 
 Vue.use(Router)
 
-let router = new Router({
+export const router = new Router({
   mode: 'history',
   routes: [
-    { path: '/', name: 'home', component: LoginComponent },
-    { path: '/login', name: 'login', component: LoginComponent },
-    { path: '/secure', name: 'secure', component: SecureComponent, meta: { requiresAuth: true } }]
+    { path: '/', component: HomePage },
+    { path: '/login', component: LoginPage },
+
+    // otherwise redirect to home
+    { path: '*', redirect: '/' }
+  ]
 })
 
-function userIsAuth () {
-  return true
-}
-
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth) && !userIsAuth()) {
-    next({ name: 'login' })
-    return
+  // redirect to login page if not logged in and trying to access a restricted page
+  const publicPages = ['/login']
+  const authRequired = !publicPages.includes(to.path)
+  const loggedIn = localStorage.getItem('user')
+
+  if (authRequired && !loggedIn) {
+    return next('/login')
   }
-  if (to.name === 'login' && userIsAuth()) {
-    next({ name: 'secure' })
-    return
-  }
+
   next()
 })
 
