@@ -11,6 +11,11 @@ services:
     working_dir: /api
     entrypoint:
       - "/api/entrypoint.sh"
+    environment:
+      - CONFIGS_PATH=/api/config/
+      - RESOURCES_PATH=/api/resources/
+    networks:
+      - api
   front:
     build:
       context: ./front/
@@ -25,5 +30,17 @@ services:
       - PORT=8083
     entrypoint:
       "/front/entrypoint.sh"
+  db:
+    image: postgres
+    ports:
+      - "8432:5432"
+    networks:
+      - api
+    environment:
+      - POSTGRES_DB=keybr
+      - db_pgdata:var/lib/postgresql/data
 volumes:
   front:
+  db_pgdata:
+networks:
+  api:

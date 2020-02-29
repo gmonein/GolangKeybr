@@ -1,3 +1,0 @@
-An interpreter raises the machine to the level of the user program; a
-compiler lowers the user program to the level of the machine language.
--- SICP

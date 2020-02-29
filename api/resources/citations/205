@@ -1,0 +1,3 @@
+Having large case statements in an object-oriented language is a sure
+sign your design is flawed.
+-- [Fixing architecture flaws in Rails' ORM]

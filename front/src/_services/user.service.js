@@ -1,10 +1,14 @@
-import config from 'config'
-import { authHeader } from '../_helpers'
+import config from '@/../config/index'
 
-export const userService = {
+const userService = {
   login,
+  loggedIn,
   logout,
-  getAll
+  setLogin
+}
+
+function setLogin (login) {
+  localStorage.setItem('user', login)
 }
 
 function login (username, password) {
@@ -25,18 +29,32 @@ function login (username, password) {
     })
 }
 
-function logout () {
-  // remove user from local storage to log user out
-  localStorage.removeItem('user')
+function loggedIn () {
+  console.log('do fetch')
+  return fetch('http://localhost:8082/whoami', { credentials: 'include' })
+    .then(e => {
+      console.log(e)
+      return e
+    })
+    .then(e => {
+      if (e.status === 200) {
+        return e.json()
+      } else {
+        return new Promise(() => { return false })
+      }
+    })
 }
 
-function getAll () {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader()
-  }
-
-  return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse)
+function logout () {
+  return fetch('http://localhost:8082/logout', { credentials: 'include' }).then(e => {
+    if (e.status === 200) {
+      return e.json()
+    } else {
+      return new Promise(() => { return false })
+    }
+  }).catch(e => {
+    return new Promise(() => { return false })
+  })
 }
 
 function handleResponse (response) {
@@ -44,8 +62,6 @@ function handleResponse (response) {
     const data = text && JSON.parse(text)
     if (!response.ok) {
       if (response.status === 401) {
-        // auto logout if 401 response returned from api
-        logout()
         location.reload(true)
       }
 
@@ -56,3 +72,5 @@ function handleResponse (response) {
     return data
   })
 }
+
+export default userService

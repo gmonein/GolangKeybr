@@ -1,0 +1,3 @@
+State is the root of all evil. In particular functions with side effects
+should be avoided.
+-- OO Sucks (bluetail.com)

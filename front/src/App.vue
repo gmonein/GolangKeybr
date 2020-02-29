@@ -1,14 +1,12 @@
 <template>
   <div id="app">
-    <router-link v-if="authenticated" to="/login" v-on:click.native="logout()" replace>Logout</router-link>
-    <a href="/secure">Logout</a>
-    <router-view @authenticated="setAuthenticated" />
+    <router-link v-if="!authenticated" to="#" v-on:click.native="logout()" replace>Logout</router-link>
+    <router-view/>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App',
   data () {
     return {
       authenticated: false
@@ -16,26 +14,13 @@ export default {
   },
   methods: {
     setAuthenticated (status) {
-      this.$store.authenticated = status
+      this.$data.authenticated = status
+      this.authenticated = status
     },
     logout () {
-      this.$store.authenticated = this.$store.commit('authenticate')
-    }
-  },
-  mounted () {
-    fetch('http://localhost:8082/whoami', {
-      credentials: 'include'
-    }).then(e => {
-      e.status === 200 ? this.$store.commit('authenticate') : this.$store.commit('logout')
-    })
-  },
-  watch: {
-    $route (to, from) {
-      fetch('http://localhost:8082/whoami', {
-        credentials: 'include'
-      }).then(e => {
-        e.status === 200 ? this.$store.commit('authenticate') : this.$store.commit('logout')
-      })
+      this.$root.userService.logout()
+      console.log('toto')
+      this.setAuthenticated(false)
     }
   }
 }
