@@ -34,7 +34,7 @@ func Routes() {
 	http.HandleFunc("/citation", fa(citationHandler))
 	http.HandleFunc("/data_ws", fa(dataWsHandler))
 	http.HandleFunc("/type_ws", fa(typeWsHandler))
-	http.HandleFunc("/oauth", oauthHandler)
+	http.HandleFunc("/oauth", frontRequestWrapper(oauthHandler))
 	http.HandleFunc("/ssh", sshHandler)
 	http.HandleFunc("/whoami", fa(whoamiHandler))
 	http.HandleFunc("/logout", frontRequestWrapper(logoutHandler))
@@ -187,10 +187,9 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(fmt.Sprintln(err)))
 		return
 	}
-	fmt.Println(tokenString)
-	cookie := &http.Cookie{Name: "token", Value: tokenString, Expires: time.Now().Add(356 * 24 * time.Hour), HttpOnly: true}
-	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "http://localhost:8083/", http.StatusTemporaryRedirect)
+	resp := map[string]string{"token": tokenString}
+	respJSON, _ := json.Marshal(resp)
+	w.Write([]byte(respJSON))
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -202,5 +201,5 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "http://localhost:8083/login", http.StatusAccepted)
+	// http.Redirect(w, r, "http://localhost:8083/login", http.StatusAccepted)
 }

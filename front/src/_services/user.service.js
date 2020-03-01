@@ -30,13 +30,13 @@ function login (username, password) {
 }
 
 function loggedIn () {
-  console.log('do fetch')
   return fetch('http://localhost:8082/whoami', { credentials: 'include' })
     .then(e => {
       console.log(e)
       return e
     })
     .then(e => {
+      console.log(e)
       if (e.status === 200) {
         return e.json()
       } else {

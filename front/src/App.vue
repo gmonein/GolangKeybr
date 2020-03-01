@@ -18,8 +18,8 @@ export default {
       this.authenticated = status
     },
     logout () {
+      this.$router.push('/login')
       this.$root.userService.logout()
-      console.log('toto')
       this.setAuthenticated(false)
     }
   }

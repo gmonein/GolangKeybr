@@ -19,7 +19,7 @@ func (api IntraAPI) getTokenUser(code string) (t *Token, err error) {
 	tokenParam := map[string]string{
 		"client_id":     api.config.UID,
 		"client_secret": api.config.Secret,
-		"redirect_uri":  "http://localhost:8082/oauth",
+		"redirect_uri":  "http://localhost:8083/oauth/marvin",
 		"grant_type":    "authorization_code",
 		"scope":         "public",
 		"code":          code}
