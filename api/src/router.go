@@ -99,7 +99,7 @@ func parseJwtToken(tokenString string) (jwt.MapClaims, error) {
 }
 
 func findTokenFromRequest(r *http.Request) *string {
-	headerToken := r.Header.Get("token")
+	headerToken := r.Header.Get("Authorization")
 	if headerToken != "" {
 		return &headerToken
 	}
@@ -113,6 +113,7 @@ func findTokenFromRequest(r *http.Request) *string {
 func authWrapper(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := findTokenFromRequest(r)
+		fmt.Println(token, "ici")
 
 		fmt.Println(token)
 		if token != nil {
@@ -122,10 +123,13 @@ func authWrapper(next func(http.ResponseWriter, *http.Request)) func(http.Respon
 				fmt.Println(err)
 				return
 			}
+
 			fmt.Println(parsedToken)
 			next(w, r)
+			fmt.Println("la")
+			return
 		}
-		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Println("icila")
 	}
 }
 
@@ -140,6 +144,7 @@ func frontRequestWrapper(next func(http.ResponseWriter, *http.Request)) func(htt
 }
 
 func citationHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("ici")
 	w.Header().Set("Content-Type", "application/text")
 	_, err := w.Write(citation)
 	if err != nil {

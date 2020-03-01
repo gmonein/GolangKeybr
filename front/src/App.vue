@@ -1,38 +1,86 @@
 <template>
   <div id="app">
-    <router-link v-if="!authenticated" to="#" v-on:click.native="logout()" replace>Logout</router-link>
+    <router-link to="#" v-on:click.native="logout()" replace>Logout</router-link>
     <router-view/>
   </div>
 </template>
 
 <script>
 export default {
-  data () {
-    return {
-      authenticated: false
-    }
-  },
   methods: {
-    setAuthenticated (status) {
-      this.$data.authenticated = status
-      this.authenticated = status
-    },
     logout () {
+      localStorage.removeItem('user', null)
       this.$router.push('/login')
-      this.$root.userService.logout()
-      this.setAuthenticated(false)
     }
   }
 }
 </script>
 
 <style>
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
+
+* {
+  border-color: #657b83;
+}
+a {
+  color: #268bd2;
+}
+a:visited {
+  color: #6c71c4;
+}
+body {
+  background-color: #002b36;
+  color: #839496;
+}
+html {
+  background-color: #002b36;
+}
+input,
+textarea {
+  background-color: #073642;
+  color: #839496;
+}
+blockquote,
+pre {
+  background-color: #073642;
+  color: #839496;
+}
+* {
+  border-color: #657b83;
+}
+a {
+  color: #268bd2;
+}
+a:visited {
+  color: #6c71c4;
+}
+body {
+  background-color: #002b36;
+  color: #839496;
+}
+html {
+  background-color: #002b36;
+}
+input,
+textarea {
+  background-color: #073642;
+  color: #839496;
+}
+blockquote,
+pre {
+  background-color: #073642;
+  color: #839496;
+}
+
 </style>

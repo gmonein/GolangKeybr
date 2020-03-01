@@ -1,85 +1,11 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
-    <ul>
-      <li>
-        <a
-          href="https://vuejs.org"
-          target="_blank"
-        >
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://forum.vuejs.org"
-          target="_blank"
-        >
-          Forum
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://chat.vuejs.org"
-          target="_blank"
-        >
-          Community Chat
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://twitter.com/vuejs"
-          target="_blank"
-        >
-          Twitter
-        </a>
-      </li>
-      <br>
-      <li>
-        <a
-          href="http://vuejs-templates.github.io/webpack/"
-          target="_blank"
-        >
-          Docs for This Template
-        </a>
-      </li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li>
-        <a
-          href="http://router.vuejs.org/"
-          target="_blank"
-        >
-          vue-router
-        </a>
-      </li>
-      <li>
-        <a
-          href="http://vuex.vuejs.org/"
-          target="_blank"
-        >
-          vuex
-        </a>
-      </li>
-      <li>
-        <a
-          href="http://vue-loader.vuejs.org/"
-          target="_blank"
-        >
-          vue-loader
-        </a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-        >
-          awesome-vue
-        </a>
-      </li>
-    </ul>
-  </div>
+  <body>
+    <div>
+      <p><span v-for="letter in citation">{{ letter }}</span></p>
+      <p>{{ citationBeforeIndex }}<span class="index">{{ currentIndexLetter }}</span>{{ citationAfterIndex }}</p>
+      <a href="#" v-bind:class="showMore" @click="showMore"> Click Me </a>
+    </div>
+  </body>
 </template>
 
 <script>
@@ -87,7 +13,44 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      citation: '',
+      citationBeforeIndex: '',
+      currentIndexLetter: '',
+      citationAfterIndex: '',
+      index: 0
+    }
+  },
+  methods: {
+    showMore: function () {
+      this.index = this.index + 1
+    },
+    addSpan: function () {
+      this.citationBeforeIndex = this.citation.slice(0, this.index)
+      this.currentIndexLetter = this.citation[this.index]
+      this.citationAfterIndex = this.citation.slice(this.index + 1)
+      console.log(this.citationAfterIndex)
+    }
+  },
+  mounted () {
+    this.citation = 'Please wait'
+    console.log(localStorage.getItem('token'))
+    fetch('http://localhost:8082/citation', {
+      headers: {
+        Authorization: localStorage.getItem('token')
+      }
+    }).then(e => {
+      console.log(e)
+      if (e.status === 200) {
+        e.text().then(t => { this.citation = t })
+      }
+    })
+  },
+  watch: {
+    citation: function (val) {
+      this.addSpan()
+    },
+    index: function (val) {
+      this.addSpan()
     }
   }
 }
@@ -95,18 +58,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
-  font-weight: normal;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.index {
+  background-color: #6c71c4;
 }
 </style>
