@@ -1,24 +1,30 @@
 <template>
-  <body>
-    <div>
-      <p><span v-for="letter in citationH" :key="letter.index" :class="letter.class">{{ letter.letter }}</span></p>
-      <!-- <p>{{ citationBeforeIndex }}<span class="index">{{ currentIndexLetter }}</span>{{ citationAfterIndex }}</p> -->
-      <a href="#" v-bind:class="showMore" @click="showMore"> Click Me </a>
-    </div>
-  </body>
+  <div id='citation'>
+    <p><span v-for="letter in citationH" :key="letter.index" :class="letter.class">{{ letter.letter }}</span></p>
+    <a href="#" v-bind:class="showMore" @click="showMore"> Click Me </a>
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
-  data () {
+  name: 'citation',
+  data: function () {
     return {
-      citation: '',
-      citationBeforeIndex: '',
-      currentIndexLetter: '',
-      citationAfterIndex: '',
       citationH: [],
+      citation: '',
       index: 0
+    }
+  },
+  getters: {
+    signalSocket: state => state.signalSocket,
+    dataSocket: state => state.dataSocket
+  },
+  mutations: {
+    signalSocket (state, v) {
+      state.signalSocket = v
+    },
+    dataSocket (state, v) {
+      state.dataSocket = v
     }
   },
   methods: {
@@ -29,7 +35,7 @@ export default {
     initCit: function () {
       this.citationH = []
       for (let i = 0; i < this.citation.length; i++) {
-        this.citationH.push({index: i, letter: this.citation[i], class: 'error'})
+        this.citationH.push({index: i, letter: this.citation[i], class: ''})
       }
       console.log(this.citationH)
     },
@@ -38,9 +44,33 @@ export default {
       this.currentIndexLetter = this.citation[this.index]
       this.citationAfterIndex = this.citation.slice(this.index + 1)
       console.log(this.citationAfterIndex)
+    },
+    connectType: function () {
     }
   },
   mounted () {
+    console.log(this.$root.Websocket('ws://localhost:8082/type_ws'))
+    let socket = new this.$root.Websocket('ws://localhost:8082/type_ws')
+    socket.onopen = function (e) {
+      alert('[open] Connection established')
+      alert('Sending to server')
+      socket.send('My name is John')
+    }
+
+    socket.onmessage = function (event) {
+      alert(`[message] Data received from server: ${event.data}`)
+    }
+
+    socket.onclose = function (event) {
+      if (event.wasClean) {
+        alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`)
+      } else {
+        // e.g. server process killed or network down
+        // event.code is usually 1006 in this case
+        alert('[close] Connection died')
+      }
+    }
+
     this.citation = 'Please wait'
     console.log(localStorage.getItem('token'))
     fetch('http://localhost:8082/citation', {
@@ -60,20 +90,23 @@ export default {
       this.addSpan()
     },
     index: function (val) {
-      this.initCit()
-      this.addSpan()
+      this.citationH[this.index - 1].class = 'typed'
+      this.citationH[this.index].class = 'index'
     }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .index {
-  background-color: #6c71c4;
+  background-color: #2f3e43
+}
+
+.typed {
+  opacity: 70%
 }
 
 .error {
-  color: red;
+  color: red
 }
 </style>

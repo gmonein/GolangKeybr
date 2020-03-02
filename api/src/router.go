@@ -103,6 +103,12 @@ func findTokenFromRequest(r *http.Request) *string {
 	if headerToken != "" {
 		return &headerToken
 	}
+
+	queryToken := r.URL.Query().Get("token")
+	if queryToken != "" {
+		return &queryToken
+	}
+
 	cookieToken, _ := r.Cookie("token")
 	if cookieToken != nil {
 		return &cookieToken.Value

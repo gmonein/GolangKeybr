@@ -27,5 +27,5 @@ var vm = new Vue({
   }
 })
 vm.userService = userService
-
+vm.typeSocket = new Websocket('ws://localhost:8082/type_ws')
 Vue.use(VueAxios, axios)

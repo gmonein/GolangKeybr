@@ -66,11 +66,11 @@ a:visited {
   color: #6c71c4;
 }
 body {
-  background-color: #002b36;
+  background-color: #1d2021;
   color: #839496;
 }
 html {
-  background-color: #002b36;
+  background-color: #1d2021;
 }
 input,
 textarea {
@@ -82,5 +82,30 @@ pre {
   background-color: #073642;
   color: #839496;
 }
+  .black {
+    color:   '#282828'
+  }
+  .red {
+    color:     '#cc241d'
+  }
+  .green {
+    color:   '#98971a'
+  }
+  .yellow {
+    color:  '#d79921'
+  }
+  .blue {
+    color:    '#458588'
+  }
+  .magenta {
+    color: '#b16286'
+  }
+  .cyan {
+    color:    '#689d6a'
+  }
+
+  .white {
+    color:   '#a89984'
+  }
 
 </style>
