@@ -1,8 +1,8 @@
 <template>
   <body>
     <div>
-      <p><span v-for="letter in citation">{{ letter }}</span></p>
-      <p>{{ citationBeforeIndex }}<span class="index">{{ currentIndexLetter }}</span>{{ citationAfterIndex }}</p>
+      <p><span v-for="letter in citationH" :key="letter.index" :class="letter.class">{{ letter.letter }}</span></p>
+      <!-- <p>{{ citationBeforeIndex }}<span class="index">{{ currentIndexLetter }}</span>{{ citationAfterIndex }}</p> -->
       <a href="#" v-bind:class="showMore" @click="showMore"> Click Me </a>
     </div>
   </body>
@@ -17,12 +17,21 @@ export default {
       citationBeforeIndex: '',
       currentIndexLetter: '',
       citationAfterIndex: '',
+      citationH: [],
       index: 0
     }
   },
   methods: {
     showMore: function () {
       this.index = this.index + 1
+    },
+
+    initCit: function () {
+      this.citationH = []
+      for (let i = 0; i < this.citation.length; i++) {
+        this.citationH.push({index: i, letter: this.citation[i], class: 'error'})
+      }
+      console.log(this.citationH)
     },
     addSpan: function () {
       this.citationBeforeIndex = this.citation.slice(0, this.index)
@@ -47,9 +56,11 @@ export default {
   },
   watch: {
     citation: function (val) {
+      this.initCit()
       this.addSpan()
     },
     index: function (val) {
+      this.initCit()
       this.addSpan()
     }
   }
@@ -60,5 +71,9 @@ export default {
 <style scoped>
 .index {
   background-color: #6c71c4;
+}
+
+.error {
+  color: red;
 }
 </style>
