@@ -1,0 +1,66 @@
+Event	event_queue.go	8
+EventQueue	event_queue.go	14
+Get	event_queue.go	/^func (q *EventQueue) Get(index int) *Event {$/
+Get	intraapi/connector.go	/^func (t Token) Get(endpoint string) (body []byte, /
+GetUserFromCode	intraapi/oauth.go	/^func GetUserFromCode(code string) (user *IntraUser/
+Initialize	event_queue.go	/^func (q *EventQueue) Initialize() {$/
+IntraAPI	intraapi/connector.go	28
+IntraUser	intraapi/me_json.go	3
+Me	intraapi/connector.go	/^func (t *Token) Me() (user *IntraUser, err error) /
+Mevent_queue.go	event_queue.go	1
+Mkeybr.go	keybr.go	1
+Mkeybr.go	keybr.go	/^func main() {$/
+Mrouter.go	router.go	1
+Mserial.go	serial.go	1
+Mtyping.go	typing.go	1
+Muser.go	user.go	1
+Next	event_queue.go	/^func (s *QueueSubscription) Next() *Event {$/
+Next	serial.go	/^func (s *Serial) Next() int {$/
+Push	event_queue.go	/^func (q *EventQueue) Push(event *Event) {$/
+QueueSubscription	event_queue.go	43
+Routes	router.go	/^func Routes() {$/
+Serial	serial.go	3
+Token	intraapi/connector.go	19
+User	user.go	3
+apiConfig	intraapi/connector.go	12
+authWrapper	router.go	/^func authWrapper(next func(http.ResponseWriter, *h/
+citationHandler	router.go	/^func citationHandler(w http.ResponseWriter, r *htt/
+context	router.go	14
+contextWrapper	router.go	/^func contextWrapper(hwc handlerWithContext) handle/
+dataWs	keybr.go	/^func dataWs(conn *websocket.Conn) {$/
+dataWsHandler	router.go	/^func dataWsHandler(w http.ResponseWriter, r *http./
+db	db/db.go	1
+deleteUser	keybr.go	/^func deleteUser(name string) {$/
+findCitation	keybr.go	/^func findCitation() []byte {$/
+findTokenFromRequest	router.go	/^func findTokenFromRequest(r *http.Request) *string/
+finish	keybr.go	/^func (user *User) finish() {$/
+frontRequestWrapper	router.go	/^func frontRequestWrapper(next func(http.ResponseWr/
+getInput	keybr.go	/^func getInput(conn *websocket.Conn) (byte, error) /
+getTokenUser	intraapi/oauth.go	/^func (api IntraAPI) getTokenUser(code string) (t */
+handler	router.go	18
+handlerWithContext	router.go	20
+init	db/db.go	/^func init() {$/
+init	intraapi/connector.go	/^func init() {$/
+input	keybr.go	/^func (user *User) input(input byte) bool {$/
+intraapi	intraapi/connector.go	1
+intraapi	intraapi/me_json.go	1
+intraapi	intraapi/oauth.go	1
+loadConfig	intraapi/connector.go	/^func loadConfig() *apiConfig {$/
+logoutHandler	router.go	/^func logoutHandler(w http.ResponseWriter, r *http./
+migrate	db/db.go	/^func migrate() {$/
+newGame	keybr.go	/^func newGame() {$/
+nextIndex	event_queue.go	/^func (s *QueueSubscription) nextIndex() int {$/
+nextIndex	event_queue.go	/^func (q *EventQueue) nextIndex() int {$/
+oauthHandler	router.go	/^func oauthHandler(w http.ResponseWriter, r *http.R/
+parseJwtToken	router.go	/^func parseJwtToken(tokenString string) (jwt.MapCla/
+readConfig	intraapi/connector.go	/^func readConfig(path string) (*apiConfig, error) {/
+reset	keybr.go	/^func (user *User) reset() {$/
+send	keybr.go	/^func (user *User) send(message []byte) {$/
+sendToEveryUser	keybr.go	/^func sendToEveryUser(message []byte) {$/
+sendUsers	keybr.go	/^func sendUsers() {$/
+sshHandler	router.go	/^func sshHandler(w http.ResponseWriter, r *http.Req/
+typeReader	keybr.go	/^func typeReader(conn *websocket.Conn) {$/
+typeSubscribe	keybr.go	/^func typeSubscribe(conn *websocket.Conn) *User {$/
+typeWsHandler	typing.go	/^func typeWsHandler(w http.ResponseWriter, r *http./
+usersJson	keybr.go	/^func usersJson() []byte {$/
+whoamiHandler	router.go	/^func whoamiHandler(w http.ResponseWriter, r *http./

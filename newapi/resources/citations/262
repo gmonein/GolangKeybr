@@ -1,0 +1,4 @@
+A tail call allows a function to return the result of another function
+without leaving an entry on the stack. Tail recursion is a specific case
+of tail calling.
+-- ASPN : Python Cookbook : Explicit Tail Call

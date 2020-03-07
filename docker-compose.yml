@@ -1,5 +1,21 @@
 version: '3.3'
 services:
+  newapi:
+    build:
+      context: ./newapi/
+      dockerfile: ./Dockerfile
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./newapi:/newapi
+    working_dir: /newapi
+    entrypoint:
+      - "/newapi/entrypoint.sh"
+    environment:
+      - CONFIGS_PATH=/newapi/config/
+      - RESOURCES_PATH=/newapi/resources/
+    networks:
+      - newapi
   api:
     build:
       context: ./api/
@@ -36,6 +52,7 @@ services:
       - "8432:5432"
     networks:
       - api
+      - newapi
     environment:
       - POSTGRES_DB=keybr
       - db_pgdata:var/lib/postgresql/data
@@ -43,4 +60,5 @@ volumes:
   front:
   db_pgdata:
 networks:
+  newapi:
   api:

@@ -1,0 +1,3 @@
+There is one meaning [for static in C]: a global variable that is
+invisible outside the current scope, be it a function or a file.
+-- Paolo Bonzini
