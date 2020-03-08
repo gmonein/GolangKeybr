@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"sort"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -56,7 +57,7 @@ func highlight(s string) string {
 }
 
 func sanitizeLineReturn(s []byte) []byte {
-	return bytes.Replace(s, []byte("\n"), []byte(" "), 1)
+	return bytes.Replace(s, []byte("\n"), []byte(" "), 4)
 }
 
 func refresh() {
@@ -124,7 +125,6 @@ func main() {
 				log.Println("read:", err)
 				return
 			}
-			fmt.Printf("\033[1J")
 			if message[0] == '1' {
 				index++
 				if index < len(citation) {
@@ -179,6 +179,10 @@ func main() {
 		}
 	}()
 
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		c.WriteMessage(websocket.TextMessage, []byte("2"))
+	}()
 	var b []byte = make([]byte, 1)
 	for {
 		os.Stdin.Read(b)

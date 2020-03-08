@@ -69,35 +69,61 @@ func main() {
 		}
 		user.ID = userIDS.Next()
 		conn.WriteMessage(1, append([]byte("3 - Hello "), []byte(user.Name)...))
-		conn.WriteMessage(1, append([]byte("4"), game.Citation...))
-
 		for {
-			_, content, err := conn.ReadMessage()
-			if err != nil {
-				log.Println(err)
-				return
-			}
+			conn.WriteMessage(1, append([]byte("4"), game.Citation...))
 
-			if game.Citation[user.Index] == content[0] {
-				user.Index++
-				conn.WriteMessage(1, []byte("1ok"))
+			for game.IsStarging() {
+			}
+			currentGameID := game.ID
+			user.Index = 0
+			eventQueue.Push(&Event{
+				UserID:    user.ID,
+				EventType: TypingValid,
+				NextIndex: user.Index})
+			for game.IsOnGoing() {
 				if user.Index == game.CitationLength {
-					eventQueue.Push(&Event{
-						UserID:    user.ID,
-						EventType: Finish,
-						NextIndex: user.Index})
+					continue
+				}
+				_, content, err := conn.ReadMessage()
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				if !game.IsOnGoing() || currentGameID != game.ID {
+					fmt.Println("breakit")
+					break
+				}
+				if content[0] == '2' {
+					continue
+				}
+				if game.Citation[user.Index] == content[0] ||
+					(game.Citation[user.Index] == '\n' && content[0] == ' ') {
+					user.Index++
+					fmt.Println(user.Index, game.CitationLength)
+					conn.WriteMessage(1, []byte("1ok"))
+					if user.Index == game.CitationLength {
+						fmt.Println("FINISH")
+						eventQueue.Push(&Event{
+							UserID:    user.ID,
+							EventType: Finish,
+							NextIndex: user.Index})
+						game.Finished()
+						continue
+					} else {
+						eventQueue.Push(&Event{
+							UserID:    user.ID,
+							EventType: TypingValid,
+							NextIndex: user.Index})
+					}
 				} else {
+					conn.WriteMessage(1, []byte("2nop"))
 					eventQueue.Push(&Event{
 						UserID:    user.ID,
-						EventType: TypingValid,
+						EventType: TypingError,
 						NextIndex: user.Index})
 				}
-			} else {
-				conn.WriteMessage(1, []byte("2nop"))
-				eventQueue.Push(&Event{
-					UserID:    user.ID,
-					EventType: TypingError,
-					NextIndex: user.Index})
+			}
+			for game.IsFinished() {
 			}
 		}
 	})
@@ -112,7 +138,7 @@ func main() {
 		for {
 			next := s.Next()
 			if next == nil {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(30 * time.Millisecond)
 				continue
 			}
 			resp, err := json.Marshal(next)
