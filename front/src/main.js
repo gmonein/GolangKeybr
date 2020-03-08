@@ -2,15 +2,12 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import VueAxios from 'vue-axios'
-import axios from 'axios'
 import router from './router'
 import store from './store/index'
 import userService from '@/_services/user.service'
+import LoginPage from '@/components/LoginPage'
 
-Vue.use(VueAxios, axios)
-
-Vue.config.productionTip = false
+Vue.component('login', LoginPage)
 
 var authenticated = false
 /* eslint-disable no-new */

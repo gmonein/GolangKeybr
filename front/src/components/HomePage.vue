@@ -46,7 +46,7 @@ export default {
     }
   },
   mounted () {
-    this.typeSocket.socket = new WebSocket('ws://localhost:8082/type_ws')
+    this.typeSocket.socket = new WebSocket('ws://localhost:8084/type_ws')
     this.typeSocket.socket.onopen = e => {
       this.typeSocket.socket.send(localStorage.getItem('token'))
     }

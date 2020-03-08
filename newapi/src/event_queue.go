@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -65,11 +66,12 @@ type QueueSubscription struct {
 }
 
 func (s *QueueSubscription) Next() *Event {
+	fmt.Println("-- before next index")
 	nextIndex := s.nextIndex()
-	s.queue.QueueMutex[nextIndex].Lock()
+	fmt.Println("-- before mutex")
 	next := s.queue.Get(nextIndex)
-	s.queue.QueueMutex[nextIndex].Unlock()
 	if next != nil {
+		fmt.Println("-- before next")
 		s.index = s.nextIndex()
 	}
 	return next
