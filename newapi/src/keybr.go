@@ -51,7 +51,6 @@ func main() {
 	})
 
 	router.GET("/type_ws", func(c *gin.Context) {
-		fmt.Println("tata")
 		token := c.Query("token")
 		user := User{Name: "Guest"}
 		if token != "" {
@@ -83,20 +82,17 @@ func main() {
 				user.Index++
 				conn.WriteMessage(1, []byte("1ok"))
 				if user.Index == game.CitationLength {
-					fmt.Println("push Finish")
 					eventQueue.Push(&Event{
 						UserID:    user.ID,
 						EventType: Finish,
 						NextIndex: user.Index})
 				} else {
-					fmt.Println("push ok")
 					eventQueue.Push(&Event{
 						UserID:    user.ID,
 						EventType: TypingValid,
 						NextIndex: user.Index})
 				}
 			} else {
-				fmt.Println("push error")
 				conn.WriteMessage(1, []byte("2nop"))
 				eventQueue.Push(&Event{
 					UserID:    user.ID,
@@ -114,13 +110,11 @@ func main() {
 		}
 		s := QueueSubscription{queue: &eventQueue}
 		for {
-			fmt.Println("enter data")
 			next := s.Next()
 			if next == nil {
 				time.Sleep(100 * time.Millisecond)
 				continue
 			}
-			fmt.Println("sending", next)
 			resp, err := json.Marshal(next)
 			if err != nil {
 				return

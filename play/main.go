@@ -26,6 +26,7 @@ var usersCount int
 
 var addr = flag.String("addr", "localhost:8084", "http service address")
 var citation []byte
+var citationLen int
 var sanitizedCitation []byte
 var index = 0
 
@@ -36,7 +37,7 @@ func grey(s string) string {
 	return "\033[0m" + s + "\033[0m"
 }
 func underline(s string) string {
-	return "\033[1;34m" + s + "\033[0m"
+	return "\033[4m" + s + "\033[0m"
 }
 func bold(s string) string {
 	return "\033[1;14m" + s + "\033[0m"
@@ -50,6 +51,9 @@ func underlineBold(s string) string {
 func redUnderlineBold(s string) string {
 	return "\033[1m\033[31m\033[4m" + s + "\033[0m"
 }
+func highlight(s string) string {
+	return "\033[7m;" + s + "\033[0m"
+}
 
 func sanitizeLineReturn(s []byte) []byte {
 	return bytes.Replace(s, []byte("\n"), []byte(" "), 1)
@@ -57,6 +61,7 @@ func sanitizeLineReturn(s []byte) []byte {
 
 func refresh() {
 	fmt.Printf("\033[1J")
+
 	var keys []int
 	for k := range users {
 		keys = append(keys, k)
@@ -67,11 +72,23 @@ func refresh() {
 	for _, k := range keys {
 		user := users[k]
 		if user != nil {
-			fmt.Printf("%d\t|%s\n", k, string(user.CitationOutput))
+			fmt.Printf("%d\t|", k)
+			if user.Index < citationLen {
+				fmt.Printf(grey("%s")+"|"+"\n", sanitizedCitation[0:user.Index])
+			} else if user.Index == citationLen {
+				fmt.Printf("%s"+"\n", sanitizedCitation)
+			}
 		}
 	}
 	fmt.Printf("\n---\n\n")
-	fmt.Printf(bold("%s")+underlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
+
+	if index < citationLen-1 {
+		fmt.Printf(bold("%s")+underlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
+	} else if index == citationLen {
+		fmt.Printf(bold("%s")+"\n", citation[0:index])
+	} else {
+		fmt.Printf(bold("%s")+underlineBold("%c")+"\n", citation[0:index], citation[index])
+	}
 	// fmt.Printf(bold("%s")+redUnderlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
 	fmt.Printf("\n")
 }
@@ -110,13 +127,16 @@ func main() {
 			fmt.Printf("\033[1J")
 			if message[0] == '1' {
 				index++
-				refresh()
+				if index < len(citation) {
+					refresh()
+				}
 			}
 			if message[0] == '2' {
 				refresh()
 			}
 			if message[0] == '4' {
 				citation = message[1:]
+				citationLen = len(citation)
 				sanitizedCitation = sanitizeLineReturn(citation)
 				fmt.Println(string(citation[index:]))
 			}
@@ -155,10 +175,6 @@ func main() {
 					CitationOutput: sanitizeLineReturn(citation)}
 			}
 			users[id].Index = JSONmessage.NextIndex
-			if users[id].Index < len(sanitizedCitation) {
-				users[id].CitationOutput = sanitizedCitation[users[id].Index:]
-			}
-
 			refresh()
 		}
 	}()
