@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"keybr/intraapi"
-	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -75,62 +74,77 @@ func main() {
 			game.Finished()
 		})
 		for {
+			fmt.Println("start of for")
 			conn.WriteMessage(1, append([]byte("4"), game.Citation...))
+			fmt.Println("after write")
 
-			for game.IsStarging() {
-			}
+			fmt.Println("after startgin")
 			currentGameID := game.ID
 			user.Index = 0
 			eventQueue.Push(&Event{
 				UserID:    user.ID,
 				EventType: TypingValid,
 				NextIndex: user.Index})
-			for game.IsOnGoing() {
-				if user.Index == game.CitationLength {
-					continue
-				}
-				_, content, err := conn.ReadMessage()
-				if err != nil {
-					log.Println(err)
-					return
-				}
-				commandTracker.Push(content[0])
-				if !game.IsOnGoing() || currentGameID != game.ID {
-					fmt.Println("breakit")
-					break
-				}
-				if content[0] == '2' {
-					continue
-				}
-				if game.Citation[user.Index] == content[0] ||
-					(game.Citation[user.Index] == '\n' && content[0] == ' ') {
-					user.Index++
-					fmt.Println(user.Index, game.CitationLength)
-					conn.WriteMessage(1, []byte("1ok"))
-					if user.Index == game.CitationLength {
-						fmt.Println("FINISH")
-						eventQueue.Push(&Event{
-							UserID:    user.ID,
-							EventType: Finish,
-							NextIndex: user.Index})
-						game.Finished()
+			for game.IsStarging() {
+			}
+			conn.WriteMessage(1, append([]byte("5"), []byte("GO")...))
+			go func(gameID int) {
+				for game.IsOnGoing() {
+					fmt.Println("before read")
+					_, content, err := conn.ReadMessage()
+					if err != nil {
+						return
+					}
+					fmt.Println("after read")
+					commandTracker.Push(content[0])
+					if !game.IsOnGoing() || gameID != game.ID {
+						fmt.Println("breakit")
+						break
+					}
+					if content[0] == '2' {
 						continue
+					}
+					if game.Citation[user.Index] == content[0] ||
+						(game.Citation[user.Index] == '\n' && content[0] == ' ') {
+						user.Index++
+						fmt.Println(user.Index, game.CitationLength)
+						if user.Index == game.CitationLength {
+							fmt.Println("FINISH")
+							eventQueue.Push(&Event{
+								UserID:    user.ID,
+								EventType: Finish,
+								NextIndex: user.Index})
+							game.Finished()
+							break
+						} else {
+							eventQueue.Push(&Event{
+								UserID:    user.ID,
+								EventType: TypingValid,
+								NextIndex: user.Index})
+						}
+						fmt.Println("before write")
+						conn.WriteMessage(1, []byte("1ok"))
+						fmt.Println("after write")
+
 					} else {
 						eventQueue.Push(&Event{
 							UserID:    user.ID,
-							EventType: TypingValid,
+							EventType: TypingError,
 							NextIndex: user.Index})
+						fmt.Println("before write2")
+						conn.WriteMessage(1, []byte("2nop"))
+						fmt.Println("after write2")
 					}
-				} else {
-					conn.WriteMessage(1, []byte("2nop"))
-					eventQueue.Push(&Event{
-						UserID:    user.ID,
-						EventType: TypingError,
-						NextIndex: user.Index})
 				}
+				fmt.Println("out")
+			}(currentGameID)
+			fmt.Println("before is on fgoing")
+			for game.IsOnGoing() {
 			}
+			fmt.Println("after is on fgoing")
 			for game.IsFinished() {
 			}
+			fmt.Println("after finished")
 		}
 	})
 

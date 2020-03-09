@@ -18,8 +18,7 @@ import (
 
 // User is pretty cool
 type User struct {
-	CitationOutput []byte
-	Index          int
+	Index int
 }
 
 var users map[int]*User
@@ -30,6 +29,7 @@ var citation []byte
 var citationLen int
 var sanitizedCitation []byte
 var index = 0
+var onGoing bool
 
 func refreshCitation() {
 }
@@ -84,7 +84,11 @@ func refresh() {
 	fmt.Printf("\n---\n\n")
 
 	if index < citationLen-1 {
-		fmt.Printf(bold("%s")+underlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
+		if onGoing {
+			fmt.Printf(bold("%s")+underlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
+		} else {
+			fmt.Printf(bold("%s")+"\n", citation)
+		}
 	} else if index == citationLen {
 		fmt.Printf(bold("%s")+"\n", citation[0:index])
 	} else {
@@ -138,7 +142,16 @@ func main() {
 				citation = message[1:]
 				citationLen = len(citation)
 				sanitizedCitation = sanitizeLineReturn(citation)
+				index = 0
 				fmt.Println(string(citation[index:]))
+				refresh()
+				onGoing = false
+			}
+			if message[0] == '5' {
+				index = 0
+				onGoing = true
+				fmt.Println(string(citation[index:]))
+				refresh()
 			}
 		}
 	}()
@@ -171,8 +184,7 @@ func main() {
 			json.Unmarshal(message, &JSONmessage)
 			id := JSONmessage.UserID
 			if users[id] == nil {
-				users[id] = &User{
-					CitationOutput: sanitizeLineReturn(citation)}
+				users[id] = &User{}
 			}
 			users[id].Index = JSONmessage.NextIndex
 			refresh()
