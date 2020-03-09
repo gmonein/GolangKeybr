@@ -30,6 +30,7 @@ var citationLen int
 var sanitizedCitation []byte
 var index = 0
 var onGoing bool
+var debugg string
 
 func refreshCitation() {
 }
@@ -60,8 +61,19 @@ func sanitizeLineReturn(s []byte) []byte {
 	return bytes.Replace(s, []byte("\n"), []byte(" "), 4)
 }
 
+var rand int = 0
+var nextRefresh time.Time
+var noRefresh = true
+
 func refresh() {
-	fmt.Printf("\033[1J")
+	if noRefresh {
+		return
+	}
+	if nextRefresh.After(time.Now()) {
+		return
+	}
+	nextRefresh = time.Now().Add(40 * time.Millisecond)
+	clearString := fmt.Sprintf("\033[1J")
 
 	var keys []int
 	for k := range users {
@@ -69,33 +81,35 @@ func refresh() {
 	}
 	sort.Ints(keys)
 
+	usersString := ""
 	// To perform the opertion you want
 	for _, k := range keys {
 		user := users[k]
 		if user != nil {
-			fmt.Printf("%d\t|", k)
+			usersString += fmt.Sprintf("%d\t|", k)
 			if user.Index < citationLen {
-				fmt.Printf(grey("%s")+"|"+"\n", sanitizedCitation[0:user.Index])
+				usersString += fmt.Sprintf(grey("%s")+"|"+"\n", sanitizedCitation[0:user.Index])
 			} else if user.Index == citationLen {
-				fmt.Printf("%s"+"\n", sanitizedCitation)
+				usersString += fmt.Sprintf("%s"+"\n", sanitizedCitation)
 			}
 		}
 	}
-	fmt.Printf("\n---\n\n")
+	usersString += fmt.Sprintf("\n---\n\n")
 
+	citationString := ""
 	if index < citationLen-1 {
 		if onGoing {
-			fmt.Printf(bold("%s")+underlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
+			citationString += fmt.Sprintf(bold("%s")+underlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
 		} else {
-			fmt.Printf(bold("%s")+"\n", citation)
+			citationString += fmt.Sprintf(bold("%s")+"\n", citation)
 		}
 	} else if index == citationLen {
-		fmt.Printf(bold("%s")+"\n", citation[0:index])
-	} else {
-		fmt.Printf(bold("%s")+underlineBold("%c")+"\n", citation[0:index], citation[index])
+		citationString += fmt.Sprintf(bold("%s")+"\n", citation[0:index])
+	} else if index != 0 {
+		debugg = string(index) + "-" + string(citationLen)
+		citationString += fmt.Sprintf(bold("%s")+underlineBold("%c")+"\n", citation[0:index], citation[index])
 	}
-	// fmt.Printf(bold("%s")+redUnderlineBold("%c")+grey("%s")+"\n", citation[0:index], citation[index], citation[index+1:])
-	fmt.Printf("\n")
+	fmt.Printf("%s%s%s\n", clearString, usersString, citationString)
 }
 
 func main() {
@@ -143,16 +157,15 @@ func main() {
 				citationLen = len(citation)
 				sanitizedCitation = sanitizeLineReturn(citation)
 				index = 0
-				fmt.Println(string(citation[index:]))
 				refresh()
 				onGoing = false
 			}
 			if message[0] == '5' {
 				index = 0
 				onGoing = true
-				fmt.Println(string(citation[index:]))
 				refresh()
 			}
+			debugg = ""
 		}
 	}()
 
@@ -195,16 +208,16 @@ func main() {
 		time.Sleep(100 * time.Millisecond)
 		c.WriteMessage(websocket.TextMessage, []byte("2"))
 	}()
-	var b []byte = make([]byte, 1)
 	for {
-		os.Stdin.Read(b)
-		if b[0] == '1' {
-			break
-		}
-		err := c.WriteMessage(websocket.TextMessage, b)
-		if err != nil {
-			log.Println("write:", err)
-			return
+		if onGoing {
+			for _, ch := range citation {
+				err := c.WriteMessage(websocket.TextMessage, []byte(string(ch)))
+				time.Sleep(10 * time.Millisecond)
+				if err != nil {
+					log.Println("write:", err)
+					return
+				}
+			}
 		}
 	}
 }

@@ -1,4 +1,0 @@
-I think the root of your mistake is saying that macros don't scale to
-larger groups. The real truth is that macros don't scale to stupider
-groups.
--- Paul Graham, on the Lightweight Languages mailing list.

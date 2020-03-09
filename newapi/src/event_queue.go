@@ -41,21 +41,23 @@ func (q *EventQueue) Push(event *Event) {
 	q.indexMutex.Lock()
 
 	q.index = q.nextIndex()
+	nextIndex := q.nextIndex()
+
 	q.QueueMutex[q.index].Lock()
-	q.QueueMutex[q.nextIndex()].Lock()
+	q.QueueMutex[nextIndex].Lock()
 
 	q.Queue[q.index] = event
-	q.Queue[q.nextIndex()] = nil
+	q.Queue[nextIndex] = nil
 
-	q.QueueMutex[q.nextIndex()].Unlock()
+	q.QueueMutex[nextIndex].Unlock()
 	q.QueueMutex[q.index].Unlock()
 	q.indexMutex.Unlock()
 }
 
 func (q *EventQueue) Get(index int) *Event {
-	q.QueueMutex[q.index].Lock()
+	q.QueueMutex[index].Lock()
 	res := q.Queue[index]
-	q.QueueMutex[q.index].Unlock()
+	q.QueueMutex[index].Unlock()
 	return res
 }
 

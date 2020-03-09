@@ -35,11 +35,11 @@ func (g *Game) Finished() {
 	}
 	g.someoneFinished = true
 	go func(g *Game) {
-		time.Sleep(3 * time.Second)
+		time.Sleep(200 * time.Millisecond)
 		fmt.Println("set finished")
 		game.State = stateFinished
 		go func(g *Game) {
-			time.Sleep(3 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 			fmt.Println("initialize new game")
 			game.Initialize()
 		}(g)
@@ -47,14 +47,21 @@ func (g *Game) Finished() {
 }
 
 func (g *Game) Initialize() {
-	g.Citation = findCitation()
-	g.CitationLength = len(g.Citation)
+	try := 15
+	for {
+		g.Citation = findCitation()
+		g.CitationLength = len(g.Citation)
+		if g.CitationLength != 0 || try == 0 {
+			break
+		}
+		try--
+	}
 	g.someoneFinished = false
 	g.Winners = []*User{}
 	g.ID = gameIDS.Next()
 	g.State = stateStarting
 	go func(g *Game) {
-		time.Sleep(3 * time.Second)
+		time.Sleep(200 * time.Millisecond)
 		fmt.Println("GO !")
 		g.State = stateOnGoing
 	}(g)
