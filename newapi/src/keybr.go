@@ -69,6 +69,11 @@ func main() {
 		}
 		user.ID = userIDS.Next()
 		conn.WriteMessage(1, append([]byte("3 - Hello "), []byte(user.Name)...))
+		commandTracker := Tracker{}
+		commandTracker.Add([]byte("restart"), func() {
+			fmt.Println("RESTART")
+			game.Finished()
+		})
 		for {
 			conn.WriteMessage(1, append([]byte("4"), game.Citation...))
 
@@ -89,6 +94,7 @@ func main() {
 					log.Println(err)
 					return
 				}
+				commandTracker.Push(content[0])
 				if !game.IsOnGoing() || currentGameID != game.ID {
 					fmt.Println("breakit")
 					break
